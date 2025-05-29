@@ -1,17 +1,25 @@
+import sys
 from model import Model
 from view import View
 from controller import Controller
 from utils import Logging
 from config import AppConfig
+from PyQt6.QtWidgets import QApplication
 
-def main() -> None:
+def main() -> None:    
     config = AppConfig()
     logger = Logging(print_info=config.print_info, level=config.logging_level)
+
+    app = QApplication(sys.argv)
 
     model = Model()
     view = View(logger)
     controller = Controller(model, view, config)
-    controller.start()
+    
+    view.show()
+    view.bring_to_front()
+
+    sys.exit(app.exec())
 
 if __name__ == "__main__":
     main()

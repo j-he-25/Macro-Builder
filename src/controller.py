@@ -1,5 +1,5 @@
 import os
-from pynput import keyboard
+from pynput import keyboard, mouse
 from typing import Optional
 import pyautogui
 import threading
@@ -12,22 +12,45 @@ class Controller:
         self.config = config
         self.automation_thread = None
 
+        self.connect_signals()
+
     # Handle Key press events
-    def on_press(self, key) -> bool:
+    def on_press(self, key: keyboard.Key) -> bool:
         try:
             self.view.log(f"Key pressed: {key}")
             if key == keyboard.Key.esc:
                 self.view.log("ESC key pressed. Stopping listener.", 'INFO')
                 self.model.stop()
                 return False
-            return True
         except Exception as e:
             self.view.log(f"Error: {e}" 'WARNING')
+        
+        if self.model.is_stopped():
+            return False
+        else:
+            return True
 
 
     # Handle add click command
-    def on_add_click(self, x: int, y: int) -> None:
-        self.model.commands.append(['CLICK', x, y])
+    def set_add_click(self) -> None:
+        def on_add_click(x:int, y:int, button, pressed) -> bool:
+            try:
+                if pressed and button == mouse.Button.left:  # Capture only left clicks
+                    self.model.commands.append(['CLICK', x, y])  # Save coordinates
+                    self.view.log(f"Click command added at: {x}, {y}", 'INFO')
+                return False
+            except Exception as e:
+                self.view.log(f"Error: {e}", 'WARNING')
+
+        listener = mouse.Listener(on_click=on_add_click)
+        listener.start()
+        
+        self.view.showMinimized()
+
+        listener.join()
+
+        self.view.showNormal()
+        self.view.bring_to_front()
 
 
     # Handle add press command
@@ -65,19 +88,28 @@ class Controller:
         self.view.log("Command Execution Complete", 'INFO')
 
 
-
-    # Start controller actions
-    def start(self) -> None:
-        self.view.log("Keyboard Listener Initiated", 'INFO')
-
+    # Start Execution of commands
+    def start_execution(self) -> None:
         try:
             listener = keyboard.Listener(on_press=self.on_press)
             listener.start()
         except Exception as e:
             self.view.log(f'Keyboard Listener failed to start with exception: {e}', 'CRITICAL')
 
+        self.view.showMinimized()
+
         self.automation_thread = threading.Thread(target=self.execute_commands, daemon=True)
         self.automation_thread.start()
 
         self.automation_thread.join()
-        listener.join()
+        listener.stop()
+
+        self.model.reset()
+        self.view.showNormal()
+        self.view.bring_to_front()
+
+
+    # Connect buttons to actions
+    def connect_signals(self) -> None:
+        self.view.click_button.clicked.connect(self.set_add_click)
+        self.view.submit.clicked.connect(self.start_execution)
