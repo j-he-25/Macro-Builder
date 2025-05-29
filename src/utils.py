@@ -16,6 +16,7 @@ class LogLevels(IntEnum):
     INFO = 4
     DEBUG = 5
 
+
 class Logging:
     def __init__(self, log_dir: Optional[str] = None, filename: Optional[str] = None, print_info: Optional[bool] = False, level: Optional[str] = 'CRITICAL'):
         

@@ -15,7 +15,7 @@ def main() -> None:
     model = Model()
     view = View(logger)
     controller = Controller(model, view, config)
-    
+
     view.show()
     view.bring_to_front()
 

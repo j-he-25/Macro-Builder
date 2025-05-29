@@ -22,11 +22,15 @@ class View(QtWidgets.QWidget):
         title1 = QtWidgets.QLabel("Menu")
         self.click_button = QtWidgets.QPushButton("Add Click")
         self.key_button = QtWidgets.QPushButton("Add Key")
+        self.clear = QtWidgets.QPushButton("Clear")
+        self.repeat_box = QtWidgets.QCheckBox("Repeat")
         self.submit = QtWidgets.QPushButton("Run")
 
         col1.addWidget(title1)
         col1.addWidget(self.click_button)
         col1.addWidget(self.key_button)
+        col1.addWidget(self.clear)
+        col1.addWidget(self.repeat_box)
         col1.addWidget(self.submit)
 
         col2 = QtWidgets.QVBoxLayout()

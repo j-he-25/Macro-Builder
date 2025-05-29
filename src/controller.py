@@ -1,7 +1,6 @@
 import os
 from pynput import keyboard, mouse
 from typing import Optional
-from PyQt6.QtCore import QTimer
 from utils import ClickOverlay
 import pyautogui
 import threading
@@ -14,6 +13,8 @@ class Controller:
         self.config = config
         self.automation_thread = None
         self.overlay = ClickOverlay()
+
+        self.view.repeat_box.setChecked(self.model.repeat)
 
         self.connect_signals()
 
@@ -57,11 +58,6 @@ class Controller:
     # Handle add press command
     def on_add_press(self, key: str) -> None:
         self.model.commands.append(['PRESS', key])
-
-
-    # Handle repeat toggle
-    def on_toggle_repeat(self, status) -> None:
-        self.model.repeat = status
 
 
     # Execute commands in command list
@@ -109,8 +105,20 @@ class Controller:
         self.view.showNormal()
         self.view.bring_to_front()
 
+    
+    # Clear the command list
+    def clear_list(self) -> None:
+        self.model.commands = []
+
+
+    # Handle repeat toggle
+    def on_toggle_repeat(self, checked: bool) -> None:
+        self.model.repeat = checked
+
 
     # Connect buttons to actions
     def connect_signals(self) -> None:
         self.view.click_button.clicked.connect(self.set_add_click)
+        self.view.clear.clicked.connect(self.clear_list)
+        self.view.repeat_box.toggled.connect(self.on_toggle_repeat)
         self.view.submit.clicked.connect(self.start_execution)
