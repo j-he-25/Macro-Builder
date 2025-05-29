@@ -1,6 +1,8 @@
 import os
 from pynput import keyboard, mouse
 from typing import Optional
+from PyQt6.QtCore import QTimer
+from utils import ClickOverlay
 import pyautogui
 import threading
 import time
@@ -11,8 +13,10 @@ class Controller:
         self.view = view
         self.config = config
         self.automation_thread = None
+        self.overlay = ClickOverlay()
 
         self.connect_signals()
+
 
     # Handle Key press events
     def on_press(self, key: keyboard.Key) -> bool:
@@ -22,41 +26,38 @@ class Controller:
                 self.view.log("ESC key pressed. Stopping listener.", 'INFO')
                 self.model.stop()
                 return False
+            return True
         except Exception as e:
             self.view.log(f"Error: {e}" 'WARNING')
-        
-        if self.model.is_stopped():
-            return False
-        else:
-            return True
 
 
-    # Handle add click command
+    # Behavior for add click button
     def set_add_click(self) -> None:
+
+        # Handle add click command
         def on_add_click(x:int, y:int, button, pressed) -> bool:
             try:
-                if pressed and button == mouse.Button.left:  # Capture only left clicks
-                    self.model.commands.append(['CLICK', x, y])  # Save coordinates
+                if pressed and button == mouse.Button.left:
+                    self.model.commands.append(['CLICK', x, y])
                     self.view.log(f"Click command added at: {x}, {y}", 'INFO')
-                return False
             except Exception as e:
                 self.view.log(f"Error: {e}", 'WARNING')
+            
+            self.overlay.hide()
+            self.view.showNormal()
+            self.view.bring_to_front()
+            return False
 
+        self.view.showMinimized()
+        self.overlay.show_overlay()
         listener = mouse.Listener(on_click=on_add_click)
         listener.start()
-        
-        self.view.showMinimized()
-
-        listener.join()
-
-        self.view.showNormal()
-        self.view.bring_to_front()
 
 
     # Handle add press command
     def on_add_press(self, key: str) -> None:
         self.model.commands.append(['PRESS', key])
-    
+
 
     # Handle repeat toggle
     def on_toggle_repeat(self, status) -> None:

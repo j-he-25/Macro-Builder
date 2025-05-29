@@ -2,6 +2,7 @@ from PyQt6 import QtWidgets
 from typing import Optional
 from utils import Logging
 
+
 class View(QtWidgets.QWidget):
     def __init__(self, log: Logging) -> None:
         super().__init__()
