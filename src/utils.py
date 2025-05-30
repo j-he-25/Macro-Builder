@@ -3,10 +3,6 @@ from typing import Optional
 from datetime import datetime
 from enum import IntEnum
 from pathlib import Path
-from PyQt6 import QtWidgets
-from PyQt6 import QtCore
-from PyQt6 import QtGui
-
 
 class LogLevels(IntEnum):
     NONE = 0
@@ -64,28 +60,3 @@ class Logging:
                 log_file.write(full_message + '\n')
                 if self.print:
                     print(full_message)
-
-
-class ClickOverlay(QtWidgets.QWidget):
-    def __init__(self) -> None:
-        super().__init__()
-        self.setWindowFlags(
-            QtCore.Qt.WindowType.FramelessWindowHint |
-            QtCore.Qt.WindowType.WindowStaysOnTopHint |
-            QtCore.Qt.WindowType.Tool
-        )
-        self.setAttribute(QtCore.Qt.WidgetAttribute.WA_NoSystemBackground, True)
-        self.setAttribute(QtCore.Qt.WidgetAttribute.WA_TranslucentBackground, True)
-        self.setAttribute(QtCore.Qt.WidgetAttribute.WA_TransparentForMouseEvents, True)
-        self.setCursor(QtGui.QCursor(QtCore.Qt.CursorShape.CrossCursor))
-
-
-    def show_overlay(self) -> None:
-        self.resize(self.screen().geometry().size())
-        self.move(0, 0)
-        self.showFullScreen()
-
-
-    def paintEvent(self, event) -> None:
-        painter = QtGui.QPainter(self)
-        painter.fillRect(self.rect(), QtGui.QColor(0, 0, 0, 128))

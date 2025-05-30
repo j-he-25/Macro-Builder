@@ -16,7 +16,6 @@ def main() -> None:
     view = View(logger)
     controller = Controller(model, view, config)
 
-    view.show()
     view.bring_to_front()
 
     sys.exit(app.exec())

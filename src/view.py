@@ -18,26 +18,30 @@ class View(QtWidgets.QWidget):
 
     # App UI and Design
     def initUI(self) -> None:
+
+        # Actions
         col1 = QtWidgets.QVBoxLayout()
-        title1 = QtWidgets.QLabel("Menu")
         self.click_button = QtWidgets.QPushButton("Add Click")
         self.key_button = QtWidgets.QPushButton("Add Key")
+        self.hold_toggle = QtWidgets.QCheckBox("Hold")
         self.clear = QtWidgets.QPushButton("Clear")
-        self.repeat_box = QtWidgets.QCheckBox("Repeat")
+        self.repeat_toggle = QtWidgets.QCheckBox("Repeat")
         self.submit = QtWidgets.QPushButton("Run")
 
-        col1.addWidget(title1)
         col1.addWidget(self.click_button)
         col1.addWidget(self.key_button)
+        col1.addWidget(self.hold_toggle)
         col1.addWidget(self.clear)
-        col1.addWidget(self.repeat_box)
+        col1.addWidget(self.repeat_toggle)
         col1.addWidget(self.submit)
 
+        # Command List
         col2 = QtWidgets.QVBoxLayout()
         self.command_list = QtWidgets.QListWidget()
 
         col2.addWidget(self.command_list)
 
+        # Full Application
         self.master = QtWidgets.QHBoxLayout()
 
         self.master.addLayout(col1, 30)
@@ -69,5 +73,6 @@ class View(QtWidgets.QWidget):
 
     # Bring New Window to front and set as active window
     def bring_to_front(self) -> None:
+        self.showNormal()
         self.raise_()
         self.activateWindow()
