@@ -31,6 +31,7 @@ class Logging:
 
         self.log_file_path = self.generate_log_file_path(log_dir, filename)
 
+
     # Generates a log directory based on my usual format
     def get_log_directory(self):
         log_dir = Path(__file__).resolve().parent.parent / 'log'
@@ -50,6 +51,7 @@ class Logging:
 
         return file_path
 
+
     # Log a message to console and log file
     def log(self, message: str, level: Optional[str] = 'DEBUG') -> None:
         if LogLevels[level] <= self.level:
@@ -60,3 +62,20 @@ class Logging:
                 log_file.write(full_message + '\n')
                 if self.print:
                     print(full_message)
+
+
+# Command class which all commands are stored as
+class Command:
+    def __init__(self, cmd: list) -> None:
+        self.cmd = cmd
+        self.label = self.get_command_label(cmd)
+
+    def _repr__(self) -> str:
+        return self.label
+    
+    @staticmethod
+    def get_command_label(command: list) -> str:
+        if command[0] in ["CLICK", "DOUBLECLICK"]:
+            return f'{command[0]} at position ({command[1]}, {command[2]})'
+        elif command[0] == "PRESS":
+            return f"{command[0]} key '{command[1]}'"

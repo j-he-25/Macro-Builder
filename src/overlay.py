@@ -35,10 +35,12 @@ class Overlay(QtWidgets.QWidget):
         self.setCursor(self.cross_cursor)
         self.show()
 
+
     def show_press_overlay(self) -> None:
         self.label.show()
         self.setCursor(QtCore.Qt.CursorShape.ArrowCursor)
         self.show()
+
 
     def paintEvent(self, event) -> None:
         painter = QtGui.QPainter(self)

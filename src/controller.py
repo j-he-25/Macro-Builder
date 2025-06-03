@@ -2,7 +2,7 @@ import os
 from pynput import keyboard, mouse
 from typing import Optional
 from overlay import Overlay
-from PyQt6 import QtCore
+from PyQt6 import QtCore, QtWidgets
 import pyautogui
 import threading
 import time
@@ -21,6 +21,7 @@ class Controller(QtCore.QObject):
         self.gui_update_signal.connect(self.restore_window)
 
         self.view.repeat_toggle.setChecked(self.model.repeat)
+        self.view.repeat_toggle.setChecked(self.model.hold)
 
         self.connect_signals()
 
@@ -32,6 +33,7 @@ class Controller(QtCore.QObject):
         self.view.clear.clicked.connect(self.clear_list)
         self.view.repeat_toggle.toggled.connect(self.on_toggle_repeat)
         self.view.submit.clicked.connect(self.start_execution)
+        self.view.command_list.model().rowsMoved.connect(self.update_command_list)
 
 
     # Restore window after button behaviors complete
@@ -41,6 +43,7 @@ class Controller(QtCore.QObject):
         if hasattr(self, 'key_listener'):
             self.key_listener.join()
 
+        self.update_list_widget()
         self.view.bring_to_front()
 
 
@@ -67,15 +70,15 @@ class Controller(QtCore.QObject):
         while not self.model.is_stopped():
             for command in self.model.commands:
                 try:
-                    if command[0] == "CLICK":
-                        pyautogui.click(command[1], command[2])
-                        self.view.log(f'Command {command[0]} executed at {command[1]}, {command[2]}', 'INFO')
-                    elif command[0] == "DOUBLECLICK":
-                        pyautogui.doubleclick(command[1], command[2])
-                        self.view.log(f'Command {command[0]} executed at {command[1]}, {command[2]}', 'INFO')
-                    elif command[0] == "PRESS":
-                        pyautogui.press(command[1])
-                        self.view.log(f'Command {command[0]} executed with key {command[1]}', 'INFO')
+                    if command.cmd[0] == "CLICK":
+                        pyautogui.click(command.cmd[1], command.cmd[2])
+                        self.view.log(f'Command {command.cmd[0]} executed at {command.cmd[1]}, {command.cmd[2]}', 'INFO')
+                    elif command.cmd[0] == "DOUBLECLICK":
+                        pyautogui.doubleclick(command.cmd[1], command.cmd[2])
+                        self.view.log(f'Command {command.cmd[0]} executed at {command.cmd[1]}, {command.cmd[2]}', 'INFO')
+                    elif command.cmd[0] == "PRESS":
+                        pyautogui.press(command.cmd[1])
+                        self.view.log(f'Command {command.cmd[0]} executed with key {command.cmd[1]}', 'INFO')
                 except Exception as e:
                     self.view.log(f"Error: {e}", 'WARNING')
                 finally:
@@ -103,7 +106,7 @@ class Controller(QtCore.QObject):
         self.input_listener.stop()
 
         self.model.reset()
-        self.gui_update_signal.emit()
+        self.view.bring_to_front()
 
 
 
@@ -116,7 +119,7 @@ class Controller(QtCore.QObject):
         def on_add_click(x:int, y:int, button: mouse.Button, pressed: bool) -> bool:
             try:
                 if pressed and button == mouse.Button.left:
-                    self.model.commands.append(['CLICK', x, y])
+                    self.model.add_command(['CLICK', x, y])
                     self.view.log(f"Click command added at: {x}, {y}", 'INFO')
             except Exception as e:
                 self.view.log(f"Error: {e}", 'WARNING')
@@ -141,10 +144,10 @@ class Controller(QtCore.QObject):
         def on_add_press(key: keyboard.Key) -> bool:
             try:
                 self.view.log(f"Key pressed: {key.char}")
-                self.model.commands.append(['PRESS', key.char])
+                self.model.add_command(['PRESS', key.char])
                 self.view.log(f"Press command added with letter {key.char}", 'INFO')
             except AttributeError:
-                self.model.commands.append(['PRESS', str(key)])
+                self.model.add_command(['PRESS', str(key)])
                 self.view.log(f"Press command added with letter {str(key)}", 'INFO')
             except Exception as e:
                 self.view.log(f"Error: {e}", 'WARNING')
@@ -154,7 +157,7 @@ class Controller(QtCore.QObject):
             self.view.log(f"Keyboard Listener Closing", 'INFO')
             return False
         
-        self.view.showMinimized()
+        # self.view.showMinimized()
         self.overlay.show_press_overlay()
         self.input_listener = keyboard.Listener(on_press=on_add_press)
         self.input_listener.start()
@@ -164,7 +167,8 @@ class Controller(QtCore.QObject):
 
     # Clear the command list
     def clear_list(self) -> None:
-        self.model.commands = []
+        self.model.commands.clear()
+        self.update_list_widget()
 
 
 # Repeat Toggle
@@ -179,3 +183,22 @@ class Controller(QtCore.QObject):
     # Handle hold key toggle
     def on_toggle_hold(self, checked: bool) -> None:
         self.model.hold = checked
+
+
+# command_list
+
+    # Loads command list into the ListWidget
+    def update_list_widget(self) -> None:
+        self.view.command_list.clear()
+        for command in self.model.commands:
+            item = QtWidgets.QListWidgetItem(command.label)
+            item.setData(QtCore.Qt.ItemDataRole.UserRole, command)
+            self.view.command_list.addItem(item)
+
+
+    # Updates the command list when item is moved
+    def update_command_list(self) -> None:
+        self.model.commands = [
+            self.view.command_list.item(i).data(QtCore.Qt.ItemDataRole.UserRole)
+            for i in range(self.view.command_list.count())
+        ]

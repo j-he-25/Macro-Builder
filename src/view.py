@@ -38,6 +38,10 @@ class View(QtWidgets.QWidget):
         # Command List
         col2 = QtWidgets.QVBoxLayout()
         self.command_list = QtWidgets.QListWidget()
+        self.command_list.setDragEnabled(True)
+        self.command_list.setAcceptDrops(True)
+        self.command_list.setDropIndicatorShown(True)
+        self.command_list.setDragDropMode(QtWidgets.QListWidget.DragDropMode.InternalMove)
 
         col2.addWidget(self.command_list)
 
