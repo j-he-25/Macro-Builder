@@ -1,6 +1,7 @@
-from PyQt6 import QtWidgets
+from PyQt6 import QtWidgets, QtCore
 from typing import Optional
 from utils import Logging
+from utils import CustomTitleBar
 
 
 class View(QtWidgets.QWidget):
@@ -18,6 +19,9 @@ class View(QtWidgets.QWidget):
 
     # App UI and Design
     def initUI(self) -> None:
+        self.setWindowFlags(QtCore.Qt.WindowType.FramelessWindowHint | QtCore.Qt.WindowType.Window)
+
+        self.title_bar = CustomTitleBar(self)
 
         # Actions
         col1 = QtWidgets.QVBoxLayout()
@@ -32,6 +36,8 @@ class View(QtWidgets.QWidget):
         col1.addWidget(self.key_button)
         col1.addWidget(self.hold_toggle)
         col1.addWidget(self.clear)
+
+        col1.addStretch(1)
         col1.addWidget(self.repeat_toggle)
         col1.addWidget(self.submit)
 
@@ -45,11 +51,15 @@ class View(QtWidgets.QWidget):
 
         col2.addWidget(self.command_list)
 
-        # Full Application
-        self.master = QtWidgets.QHBoxLayout()
+        self.workspace = QtWidgets.QHBoxLayout()
+        self.workspace.addLayout(col1, 30)
+        self.workspace.addLayout(col2, 70)
 
-        self.master.addLayout(col1, 30)
-        self.master.addLayout(col2, 70)
+        # Full Application
+        self.master = QtWidgets.QVBoxLayout()
+        self.setContentsMargins(0, 0, 0, 0)
+        self.master.addWidget(self.title_bar)
+        self.master.addLayout(self.workspace)
 
         self.setLayout(self.master)
 
@@ -65,6 +75,15 @@ class View(QtWidgets.QWidget):
                 border: 1px solid #fff;
                 border-radius: 5px;
                 padding: 5px 10px;
+            }
+            
+            QPushButton:hover {
+                border: 1px solid #000;
+            }
+            
+            QPushButton:pressed {
+                background-color: #3d6199;
+                border-style: inset;
             }
         """)
 

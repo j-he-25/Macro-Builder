@@ -2,6 +2,7 @@ import os
 from typing import Optional
 from datetime import datetime
 from enum import IntEnum
+from PyQt6 import QtWidgets, QtCore
 from pathlib import Path
 
 class LogLevels(IntEnum):
@@ -79,3 +80,57 @@ class Command:
             return f'{command[0]} at position ({command[1]}, {command[2]})'
         elif command[0] == "PRESS":
             return f"{command[0]} key '{command[1]}'"
+        
+
+
+# Class for custom title bars
+class CustomTitleBar(QtWidgets.QWidget):
+    def __init__(self, parent=None) -> None:
+        super().__init__(parent)
+        self.setFixedHeight(30)
+        self.setStyleSheet("background-color: #333; color: white;")
+
+        layout = QtWidgets.QHBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(5)
+
+        self.title = QtWidgets.QLabel("Macro Builder")
+        self.title.setStyleSheet("font-weight: bold; font-size: 18px;")
+        layout.addWidget(self.title)
+        layout.addStretch()
+
+        self.minimize_btn = QtWidgets.QPushButton("–")
+        # self.maximize_btn = QtWidgets.QPushButton("🗖")
+        self.close_btn =QtWidgets. QPushButton("✕")
+
+        for btn in [self.minimize_btn, 
+                    # self.maximize_btn, 
+                    self.close_btn]:
+            btn.setFixedSize(30, 30)
+            btn.setStyleSheet("""
+                QPushButton {
+                    background-color: #444;
+                    color: white;
+                    border: none;
+                }
+                QPushButton:hover {
+                    background-color: #555;
+                }
+            """)
+
+        layout.addWidget(self.minimize_btn)
+        # layout.addWidget(self.maximize_btn)
+        layout.addWidget(self.close_btn)
+
+        self.setLayout(layout)
+        # self.is_maximized = False
+
+    def mousePressEvent(self, event):
+        if event.button() == QtCore.Qt.MouseButton.LeftButton:
+            self.drag_pos = event.globalPosition().toPoint()
+
+    def mouseMoveEvent(self, event):
+        if event.buttons() == QtCore.Qt.MouseButton.LeftButton:
+            delta = event.globalPosition().toPoint() - self.drag_pos
+            self.window().move(self.window().pos() + delta)
+            self.drag_pos = event.globalPosition().toPoint()

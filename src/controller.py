@@ -27,6 +27,9 @@ class Controller(QtCore.QObject):
 
     # Connect buttons to actions
     def connect_signals(self) -> None:
+        self.view.title_bar.minimize_btn.clicked.connect(self.view.showMinimized)
+        self.view.title_bar.close_btn.clicked.connect(self.view.close)
+
         self.view.click_button.clicked.connect(self.set_add_click)
         self.view.key_button.clicked.connect(self.set_add_key)
 

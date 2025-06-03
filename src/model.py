@@ -13,6 +13,7 @@ class Model:
     def add_command(self, cmd: list) -> None:
         self.commands.append(Command(cmd))
 
+
     def stop(self) -> None:
         self.stop_event.set()
 
